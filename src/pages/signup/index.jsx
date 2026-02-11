@@ -1,7 +1,7 @@
 import { Form, Link } from "react-router";
 import clsx from "clsx";
-import { useEffect, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
+import { useSelector, useDispatch } from "react-redux";
 
 import {
   FormButton,
@@ -10,8 +10,11 @@ import {
   LogoWordmark,
 } from "../../common-components";
 import { useSignupMutation } from "../../store/api/userSlice";
+import { themeSelector, setTheme } from "../../store/userPreferenceSlice";
 
 export default function SignupPage() {
+  const theme = useSelector(themeSelector);
+  const dispatch = useDispatch();
   const [signup, { isLoading }] = useSignupMutation();
   const { control, getValues, formState } = useForm({
     mode: "all",
@@ -23,19 +26,6 @@ export default function SignupPage() {
       monthlyBudget: "",
     },
   });
-  const [isDarkMode, setIsDarkMode] = useState(() => {
-    if (typeof window === "undefined") return false;
-    return window.localStorage.getItem("skledger-theme") === "dark";
-  });
-
-  useEffect(() => {
-    const root = document.documentElement;
-    root.classList.toggle("theme-dark", isDarkMode);
-    window.localStorage.setItem(
-      "skledger-theme",
-      isDarkMode ? "dark" : "light",
-    );
-  }, [isDarkMode]);
 
   const authHeroClass = clsx(
     "auth-hero",
@@ -69,8 +59,10 @@ export default function SignupPage() {
       <label className="theme-switch swap fixed right-5 top-5 z-50 rounded-full border border-slate-300/70 bg-base-100 px-3 py-2 shadow-sm">
         <input
           type="checkbox"
-          checked={isDarkMode}
-          onChange={(event) => setIsDarkMode(event.target.checked)}
+          checked={theme === "dark"}
+          onChange={() => {
+            dispatch(setTheme(theme === "dark" ? "light" : "dark"));
+          }}
         />
         <span className="swap-off text-xs font-medium text-slate-700">
           Dark mode

@@ -1,11 +1,14 @@
-import { Form, Link } from "react-router";
+import { Link } from "react-router";
 import clsx from "clsx";
-import { useEffect, useState } from "react";
+import { useSelector, useDispatch } from "react-redux";
 import { Controller, useForm } from "react-hook-form";
 import { FormButton, FormInput, LogoWordmark } from "../../common-components";
 import { useLoginMutation } from "../../store/api/userSlice";
+import { themeSelector, setTheme } from "../../store/userPreferenceSlice";
 
 export default function LoginPage() {
+  const theme = useSelector(themeSelector);
+  const dispatch = useDispatch();
   const [login, { isLoading }] = useLoginMutation();
   const { control, getValues, formState } = useForm({
     mode: "all",
@@ -14,19 +17,6 @@ export default function LoginPage() {
       password: "",
     },
   });
-  const [isDarkMode, setIsDarkMode] = useState(() => {
-    if (typeof window === "undefined") return false;
-    return window.localStorage.getItem("skledger-theme") === "dark";
-  });
-
-  useEffect(() => {
-    const root = document.documentElement;
-    root.classList.toggle("theme-dark", isDarkMode);
-    window.localStorage.setItem(
-      "skledger-theme",
-      isDarkMode ? "dark" : "light",
-    );
-  }, [isDarkMode]);
 
   const authHeroClass = clsx(
     "auth-hero",
@@ -38,31 +28,26 @@ export default function LoginPage() {
     "md:p-8",
   );
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const { email, password } = getValues();
-
-    login(
-      { email, password },
-      {
-        onSuccess: (response) => {
-          console.log("Login successful:", response);
-          // Handle successful login, e.g., navigate to dashboard
-        },
-        onError: (error) => {
-          console.error("Login failed:", error);
-          // Handle login error, e.g., show error message to user
-        },
-      },
-    );
+    try {
+      const response = await login({ email, password }).unwrap();
+      console.log("Login successful:", response);
+      // Handle successful login, e.g., navigate to dashboard
+    } catch (err) {
+      console.error("Login failed:", err);
+    }
   };
   return (
     <main className="auth-page auth-bg grid min-h-screen place-items-center p-6 md:p-10">
       <label className="theme-switch swap fixed right-5 top-5 z-50 rounded-full border border-slate-300/70 bg-base-100 px-3 py-2 shadow-sm">
         <input
           type="checkbox"
-          checked={isDarkMode}
-          onChange={(event) => setIsDarkMode(event.target.checked)}
+          checked={theme === "dark"}
+          onChange={() => {
+            dispatch(setTheme(theme === "dark" ? "light" : "dark"));
+          }}
         />
         <span className="swap-off text-xs font-medium text-slate-700">
           Dark mode
