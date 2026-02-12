@@ -20,7 +20,16 @@ export const userApi = createApi({
         body: data,
       }),
     }),
+    me: builder.query({
+      query: () => ({
+        url: "api/auth/me",
+        method: "GET",
+      }),
+      extraOptions: {
+        maxRetries: 0, // Disable retries for this query
+      },
+    }),
   }),
 });
 
-export const { useLoginMutation, useSignupMutation } = userApi;
+export const { useLoginMutation, useSignupMutation, useMeQuery } = userApi;

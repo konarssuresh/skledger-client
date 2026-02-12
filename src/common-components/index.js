@@ -1,4 +1,8 @@
 export { default as FormButton } from "./FormButton";
 export { default as FormInput } from "./FormInput";
 export { default as FormSelect } from "./FormSelect";
+export { default as TextArea } from "./TextArea";
 export { default as LogoWordmark } from "./LogoWordmark";
+export { default as Calculator } from "./Calculator";
+export { default as Dialog } from "./Dialog";
+export { default as SegmentedTypeControl } from "./SegmentedTypeControl";
