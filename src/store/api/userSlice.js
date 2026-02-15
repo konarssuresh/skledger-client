@@ -5,6 +5,7 @@ export const userApi = createApi({
   reducerPath: "api/user",
   // use the shared baseQuery exported from ./baseQuery
   baseQuery,
+  tagTypes: ["user"],
   endpoints: (builder) => ({
     login: builder.mutation({
       query: (credentials) => ({
@@ -25,11 +26,33 @@ export const userApi = createApi({
         url: "api/auth/me",
         method: "GET",
       }),
+      providesTags: ["user"],
       extraOptions: {
         maxRetries: 0, // Disable retries for this query
       },
     }),
+    changePreferences: builder.mutation({
+      query: (data) => ({
+        url: "api/auth/changePreferences",
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["user"],
+    }),
+    signout: builder.mutation({
+      query: () => ({
+        url: "api/auth/signout",
+        method: "POST",
+      }),
+      invalidatesTags: ["user"],
+    }),
   }),
 });
 
-export const { useLoginMutation, useSignupMutation, useMeQuery } = userApi;
+export const {
+  useLoginMutation,
+  useSignupMutation,
+  useMeQuery,
+  useChangePreferencesMutation,
+  useSignoutMutation,
+} = userApi;

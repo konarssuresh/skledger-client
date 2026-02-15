@@ -1,4 +1,6 @@
 import { Form, Link } from "react-router";
+import { useNavigate } from "react-router";
+import { useEffect } from "react";
 import clsx from "clsx";
 import { useForm, Controller } from "react-hook-form";
 import { useSelector, useDispatch } from "react-redux";
@@ -9,13 +11,18 @@ import {
   FormSelect,
   LogoWordmark,
 } from "../../common-components";
-import { useSignupMutation } from "../../store/api/userSlice";
+import { useMeQuery, useSignupMutation } from "../../store/api/userSlice";
 import { themeSelector, setTheme } from "../../store/userPreferenceSlice";
 
 export default function SignupPage() {
+  const navigate = useNavigate();
   const theme = useSelector(themeSelector);
   const dispatch = useDispatch();
   const [signup, { isLoading }] = useSignupMutation();
+  const { data: meData } = useMeQuery(undefined, {
+    refetchOnFocus: false,
+    refetchOnReconnect: false,
+  });
   const { control, getValues, formState } = useForm({
     mode: "all",
     defaultValues: {
@@ -26,6 +33,12 @@ export default function SignupPage() {
       monthlyBudget: "",
     },
   });
+
+  useEffect(() => {
+    if (meData?.user?.id) {
+      navigate("/transactions", { replace: true });
+    }
+  }, [meData?.user?.id, navigate]);
 
   const authHeroClass = clsx(
     "auth-hero",
@@ -54,6 +67,7 @@ export default function SignupPage() {
       // Handle signup error, e.g., show error message to user
     }
   };
+
   return (
     <main className="auth-page auth-bg grid min-h-screen place-items-center p-6 md:p-10">
       <label className="theme-switch swap fixed right-5 top-5 z-50 rounded-full border border-slate-300/70 bg-base-100 px-3 py-2 shadow-sm">

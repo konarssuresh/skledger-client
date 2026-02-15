@@ -4,6 +4,7 @@ import LogoWordmark from "../common-components/LogoWordmark.jsx";
 const navItems = [
   { to: "/dashboard", label: "Dashboard" },
   { to: "/transactions", label: "Transactions" },
+  { to: "/settings", label: "Settings" },
 ];
 
 const DesktopNav = ({ collapsed, onToggle }) => {

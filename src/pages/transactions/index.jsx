@@ -5,6 +5,7 @@ import { showDialog } from "../../common-components/DialogContainer.jsx";
 import AddTransactionDialog from "./AddTransactionDialog.jsx";
 import Calendar from "./Calendar.jsx";
 import DayTransactions from "./DayTransactions.jsx";
+import TransactionsShimmer from "./TransactionsShimmer.jsx";
 import { Selectors } from "../../store/calendarSlice.js";
 import { useFetchMonthlyTransactionSummaryQuery } from "../../store/api/transactionSlice.js";
 
@@ -13,10 +14,18 @@ const { activeMonthSelector } = Selectors;
 const TransactionsPage = () => {
   const activeMonth = useSelector(activeMonthSelector);
 
-  const { data: monthlySummary = {} } = useFetchMonthlyTransactionSummaryQuery({
+  const {
+    data: monthlySummary = {},
+    isLoading: isLoadingSummary,
+    isFetching: isFetchingSummary,
+  } = useFetchMonthlyTransactionSummaryQuery({
     year: activeMonth.getFullYear(),
     month: activeMonth.getMonth() + 1,
   });
+
+  const isSummaryLoading =
+    (isLoadingSummary || isFetchingSummary) &&
+    Object.keys(monthlySummary || {}).length === 0;
 
   const handleOpenAddTransaction = () => {
     const closeDialog = showDialog(
@@ -73,6 +82,10 @@ const TransactionsPage = () => {
     });
     return map;
   }, [monthlySummary]);
+
+  if (isSummaryLoading) {
+    return <TransactionsShimmer />;
+  }
 
   return (
     <main className="min-h-screen p-2 sm:p-3 md:p-10">

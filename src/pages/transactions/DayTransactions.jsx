@@ -75,7 +75,7 @@ const TransactionActionSheet = ({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[1100] flex items-end bg-slate-900/40"
+      className="fixed inset-0 z-1100 flex items-end bg-slate-900/40"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) onClose();
       }}
@@ -108,7 +108,9 @@ const TransactionActionSheet = ({
               {transactionDate || displayDate}
             </div>
             <div>
-              <span className="font-medium text-base-content/80">Currency:</span>{" "}
+              <span className="font-medium text-base-content/80">
+                Currency:
+              </span>
               {transaction.currency || "INR"}
             </div>
             <div>

@@ -1,15 +1,33 @@
 import { Link } from "react-router";
+import { useNavigate } from "react-router";
+import { useEffect } from "react";
 import clsx from "clsx";
 import { useSelector, useDispatch } from "react-redux";
 import { Controller, useForm } from "react-hook-form";
 import { FormButton, FormInput, LogoWordmark } from "../../common-components";
-import { useLoginMutation } from "../../store/api/userSlice";
+import {
+  useLoginMutation,
+  useMeQuery,
+  userApi,
+} from "../../store/api/userSlice";
 import { themeSelector, setTheme } from "../../store/userPreferenceSlice";
 
 export default function LoginPage() {
+  const navigate = useNavigate();
   const theme = useSelector(themeSelector);
   const dispatch = useDispatch();
   const [login, { isLoading }] = useLoginMutation();
+  const { data: meData } = useMeQuery(undefined, {
+    refetchOnFocus: false,
+    refetchOnReconnect: false,
+  });
+
+  useEffect(() => {
+    if (meData?.user?.id) {
+      navigate("/transactions", { replace: true });
+    }
+  }, [meData?.user?.id, navigate]);
+
   const { control, getValues, formState } = useForm({
     mode: "all",
     defaultValues: {
@@ -34,11 +52,13 @@ export default function LoginPage() {
     try {
       const response = await login({ email, password }).unwrap();
       console.log("Login successful:", response);
-      // Handle successful login, e.g., navigate to dashboard
+      dispatch(userApi.util.invalidateTags(["user"]));
+      navigate("/transactions", { replace: true });
     } catch (err) {
       console.error("Login failed:", err);
     }
   };
+
   return (
     <main className="auth-page auth-bg grid min-h-screen place-items-center p-6 md:p-10">
       <label className="theme-switch swap fixed right-5 top-5 z-50 rounded-full border border-slate-300/70 bg-base-100 px-3 py-2 shadow-sm">
