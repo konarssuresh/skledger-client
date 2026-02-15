@@ -40,7 +40,10 @@ const SettingsPage = () => {
   const handleSignout = async () => {
     try {
       await signout().unwrap();
-      navigate("/login", { replace: true });
+      navigate("/login", {
+        replace: true,
+        state: { skipAuthCheck: true },
+      });
     } catch (error) {
       console.error("Failed to sign out", error);
     }

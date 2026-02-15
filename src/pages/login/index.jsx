@@ -1,5 +1,6 @@
 import { Link } from "react-router";
 import { useNavigate } from "react-router";
+import { useLocation } from "react-router";
 import { useEffect } from "react";
 import clsx from "clsx";
 import { useSelector, useDispatch } from "react-redux";
@@ -14,10 +15,13 @@ import { themeSelector, setTheme } from "../../store/userPreferenceSlice";
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const theme = useSelector(themeSelector);
   const dispatch = useDispatch();
   const [login, { isLoading }] = useLoginMutation();
+  const shouldSkipAuthCheck = Boolean(location.state?.skipAuthCheck);
   const { data: meData } = useMeQuery(undefined, {
+    skip: shouldSkipAuthCheck,
     refetchOnFocus: false,
     refetchOnReconnect: false,
   });
