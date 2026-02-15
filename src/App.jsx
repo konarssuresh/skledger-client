@@ -8,6 +8,7 @@ import DashboardPage from "./pages/dashboard";
 import TransactionsPage from "./pages/transactions";
 import { themeSelector } from "./store/userPreferenceSlice";
 import RouteProtector from "./RouteProtector";
+import AuthenticatedLayout from "./shared/AuthenticatedLayout";
 
 function App() {
   const theme = useSelector(themeSelector);
@@ -22,11 +23,10 @@ function App() {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<SignupPage />} />
       <Route element={<RouteProtector />}>
-        <Route path="/dashboard" element={<DashboardPage />} />
-      </Route>
-
-      <Route element={<RouteProtector />}>
-        <Route path="/transactions" element={<TransactionsPage />} />
+        <Route element={<AuthenticatedLayout />}>
+          <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/transactions" element={<TransactionsPage />} />
+        </Route>
       </Route>
 
       <Route path="*" element={<Navigate to="/login" replace />} />

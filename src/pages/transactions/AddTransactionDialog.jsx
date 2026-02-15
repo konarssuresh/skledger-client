@@ -1,5 +1,6 @@
 import { useForm, Controller, useWatch } from "react-hook-form";
 import { filter } from "lodash";
+import { useSelector } from "react-redux";
 import {
   Dialog,
   FormButton,
@@ -12,25 +13,50 @@ import {
 import { showDialog } from "../../common-components/DialogContainer.jsx";
 import CalculatorDialog from "./CalculatorDialog.jsx";
 import { useFetchCategoriesQuery } from "../../store/api/categorySlice";
-import { useAddTransactionMutation } from "../../store/api/transactionSlice";
+import {
+  useAddTransactionMutation,
+  useUpdateTransactionMutation,
+} from "../../store/api/transactionSlice";
+import { Selectors } from "../../store/calendarSlice";
+const { selectedDayKeySelector } = Selectors;
 
-function AddTransactionDialog({ onClose }) {
+const getDefault = ({ transaction = null, selectedDay } = {}) => {
+  if (transaction) {
+    const defaultObj = {
+      id: transaction._id,
+      name: transaction.name,
+      amount: String(transaction.amount),
+      currency: transaction.currency,
+      categoryId: transaction.categoryId,
+      date: transaction?.date?.split?.("T")?.[0],
+      note: transaction.note,
+    };
+    return defaultObj;
+  }
+
+  return {
+    name: "",
+    type: "expense",
+    amount: "",
+    currency: "INR",
+    category: null,
+    date: selectedDay,
+    notes: "",
+  };
+};
+
+function AddTransactionDialog({ onClose, transaction }) {
+  const selectedDay = useSelector(selectedDayKeySelector);
   const { data: { categories = [] } = {}, isLoading: isFetchingCategories } =
     useFetchCategoriesQuery();
   const [addTransaction, { isLoading: isAddingTransaction }] =
     useAddTransactionMutation();
+  const [updateTransaction, { isLoading: isUpdatingTransaction }] =
+    useUpdateTransactionMutation();
 
   const { control, formState, setValue, getValues } = useForm({
     mode: "all",
-    defaultValues: {
-      name: "",
-      type: "expense",
-      amount: "",
-      currency: "INR",
-      category: null,
-      date: new Date().toISOString().split("T")[0],
-      notes: "",
-    },
+    defaultValues: getDefault({ transaction, selectedDay }),
   });
 
   const type = useWatch({ control, name: "type" });
@@ -59,16 +85,29 @@ function AddTransactionDialog({ onClose }) {
     const values = getValues();
     try {
       const reqBody = {};
-      const { name, amount, currency, category, date, type } = values;
-      reqBody.name = name;
-      reqBody.amount = parseFloat(amount);
-      reqBody.currency = currency;
-      reqBody.categoryId = category;
-      reqBody.date = date;
-      reqBody.type = type;
-      const resp = await addTransaction(reqBody).unwrap();
-      console.log("Transaction added successfully:", resp);
-      onClose();
+      const { id, name, amount, currency, categoryId, date, type, note } =
+        values;
+      if (!id) {
+        reqBody.name = name;
+        reqBody.amount = parseFloat(amount);
+        reqBody.currency = currency;
+        reqBody.categoryId = categoryId;
+        reqBody.date = date;
+        reqBody.type = type;
+        reqBody.note = note;
+        const resp = await addTransaction(reqBody).unwrap();
+        console.log("Transaction added successfully:", resp);
+        onClose();
+      } else {
+        reqBody.id = id;
+        let keys = Object.keys(formState.dirtyFields);
+        for (let key of keys) {
+          reqBody[key] = values[key];
+        }
+        const resp = await updateTransaction(reqBody).unwrap();
+        console.log("transaction updated successfully", resp);
+        onClose();
+      }
     } catch (error) {
       console.error("Failed to add transaction:", error);
       // Optionally, show an error message to the user
@@ -78,21 +117,27 @@ function AddTransactionDialog({ onClose }) {
   return (
     <Dialog
       open
-      title="Add Transaction"
+      title={transaction ? "Edit Transaction" : "Add Transaction"}
       width="large"
       onClose={onClose}
       footer={
-        <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+        <div className="flex w-full flex-col-reverse gap-2 sm:flex-row sm:justify-end">
           <FormButton
             variant="ghost"
+            fullWidth={false}
             className="border border-slate-300/70 text-slate-700"
             onClick={onClose}
           >
             Cancel
           </FormButton>
           <FormButton
+            fullWidth={false}
             onClick={handleSubmit}
-            disabled={!formState?.isValid || isAddingTransaction}
+            disabled={
+              !formState?.isValid ||
+              isAddingTransaction ||
+              isUpdatingTransaction
+            }
             type="button"
           >
             Save transaction
@@ -206,7 +251,7 @@ function AddTransactionDialog({ onClose }) {
         />
 
         <Controller
-          name="category"
+          name="categoryId"
           control={control}
           rules={{ required: "Category is required" }}
           render={({ field, fieldState }) => {

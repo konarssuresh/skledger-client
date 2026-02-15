@@ -58,6 +58,17 @@ html.theme-dark body {
   color: #e2e8f0;
 }
 
+html.theme-dark {
+  --color-base-100: #0f172a;
+  --color-base-200: #111827;
+  --color-base-300: #334155;
+  --color-base-content: #e2e8f0;
+  --color-neutral: #0b1220;
+  --color-neutral-content: #e2e8f0;
+  --color-primary: #14b8a6;
+  --color-primary-content: #042f2e;
+}
+
 html.theme-dark .auth-bg {
   background-image: radial-gradient(circle at 15% 12%, #0f172a 0%, #111827 40%, #0b1220 90%);
 }
@@ -174,4 +185,36 @@ html.theme-dark .app-dialog-title {
 
 html.theme-dark .app-dialog-body {
   color: #cbd5e1;
+}
+
+html.theme-dark .app-dialog .text-slate-900 {
+  color: #e2e8f0;
+}
+
+html.theme-dark .app-dialog .text-slate-700,
+html.theme-dark .app-dialog .text-slate-600,
+html.theme-dark .app-dialog .text-slate-500 {
+  color: #94a3b8;
+}
+
+html.theme-dark .app-dialog .label-text {
+  color: #94a3b8;
+}
+
+html.theme-dark .app-dialog .input,
+html.theme-dark .app-dialog .select,
+html.theme-dark .app-dialog .textarea {
+  border-color: rgba(71, 85, 105, 0.7);
+  background: #0f172a;
+  color: #e2e8f0;
+}
+
+html.theme-dark .app-dialog .input::placeholder,
+html.theme-dark .app-dialog .textarea::placeholder {
+  color: #64748b;
+}
+
+html.theme-dark .app-dialog .select option {
+  background: #0f172a;
+  color: #e2e8f0;
 }
