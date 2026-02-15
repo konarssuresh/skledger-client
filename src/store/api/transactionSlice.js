@@ -8,7 +8,11 @@ const invalidateAfterAddOrUpdate = (result, error, transactionData) => {
   const dateValue =
     (transactionData &&
       (transactionData.date || transactionData.transactionDate)) ||
-    (result && (result.date || result.transactionDate));
+    (result &&
+      (result.date ||
+        result.transactionDate ||
+        result?.transaction?.date ||
+        result?.transaction?.transactionDate));
 
   const invalidates = [{ type: "Transactions", id: "LIST" }];
 
@@ -56,6 +60,7 @@ const formatDateKey = (date) => {
 export const transactionApi = createApi({
   reducerPath: "api/transactions",
   baseQuery,
+  tagTypes: ["Transactions", "TransactionsDay", "MonthlySummary"],
   endpoints: (builder) => ({
     fetchTransactions: builder.query({
       query: () => ({ url: "api/transactions", method: "GET" }),
@@ -101,6 +106,24 @@ export const transactionApi = createApi({
         method: "PATCH",
         body: transactionData,
       }),
+      invalidatesTags: invalidateAfterAddOrUpdate,
+    }),
+    deleteTransaction: builder.mutation({
+      query: ({ id } = {}) => ({
+        url: `api/transactions/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: (result, error, { date } = {}) => {
+        const invalidates = [{ type: "Transactions", id: "LIST" }];
+        if (date) {
+          const d = new Date(date);
+          if (!Number.isNaN(d.getTime())) {
+            invalidates.push({ type: "TransactionsDay", id: formatDateKey(d) });
+            invalidates.push({ type: "MonthlySummary", id: formatMonthKey(d) });
+          }
+        }
+        return invalidates;
+      },
     }),
   }),
 });
@@ -111,6 +134,7 @@ export const {
   useAddTransactionMutation,
   useFetchTransactionsForDayQuery,
   useUpdateTransactionMutation,
+  useDeleteTransactionMutation,
 } = transactionApi;
 
 export default transactionApi.reducer;

@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { useForm, Controller, useWatch } from "react-hook-form";
 import { filter } from "lodash";
 import { useSelector } from "react-redux";
@@ -18,30 +19,32 @@ import {
   useUpdateTransactionMutation,
 } from "../../store/api/transactionSlice";
 import { Selectors } from "../../store/calendarSlice";
+
 const { selectedDayKeySelector } = Selectors;
 
-const getDefault = ({ transaction = null, selectedDay } = {}) => {
+const getDefaultValues = ({ transaction = null, selectedDay } = {}) => {
   if (transaction) {
-    const defaultObj = {
+    return {
       id: transaction._id,
-      name: transaction.name,
-      amount: String(transaction.amount),
-      currency: transaction.currency,
-      categoryId: transaction.categoryId,
-      date: transaction?.date?.split?.("T")?.[0],
-      note: transaction.note,
+      name: transaction.name || "",
+      type: transaction.type || "expense",
+      amount: String(transaction.amount ?? ""),
+      currency: transaction.currency || "INR",
+      categoryId: transaction.categoryId || "",
+      date: transaction?.date?.split?.("T")?.[0] || selectedDay,
+      note: transaction.note || "",
     };
-    return defaultObj;
   }
 
   return {
+    id: undefined,
     name: "",
     type: "expense",
     amount: "",
     currency: "INR",
-    category: null,
+    categoryId: "",
     date: selectedDay,
-    notes: "",
+    note: "",
   };
 };
 
@@ -54,9 +57,14 @@ function AddTransactionDialog({ onClose, transaction }) {
   const [updateTransaction, { isLoading: isUpdatingTransaction }] =
     useUpdateTransactionMutation();
 
+  const defaultValues = useMemo(
+    () => getDefaultValues({ transaction, selectedDay }),
+    [transaction, selectedDay],
+  );
+
   const { control, formState, setValue, getValues } = useForm({
     mode: "all",
-    defaultValues: getDefault({ transaction, selectedDay }),
+    defaultValues,
   });
 
   const type = useWatch({ control, name: "type" });
@@ -83,34 +91,27 @@ function AddTransactionDialog({ onClose, transaction }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const values = getValues();
+    const { id, name, amount, currency, categoryId, date, type, note } = values;
+
+    const reqBody = {
+      name,
+      amount: parseFloat(amount),
+      currency,
+      categoryId,
+      date,
+      type,
+      note: note || "",
+    };
+
     try {
-      const reqBody = {};
-      const { id, name, amount, currency, categoryId, date, type, note } =
-        values;
-      if (!id) {
-        reqBody.name = name;
-        reqBody.amount = parseFloat(amount);
-        reqBody.currency = currency;
-        reqBody.categoryId = categoryId;
-        reqBody.date = date;
-        reqBody.type = type;
-        reqBody.note = note;
-        const resp = await addTransaction(reqBody).unwrap();
-        console.log("Transaction added successfully:", resp);
-        onClose();
+      if (id) {
+        await updateTransaction({ id, ...reqBody }).unwrap();
       } else {
-        reqBody.id = id;
-        let keys = Object.keys(formState.dirtyFields);
-        for (let key of keys) {
-          reqBody[key] = values[key];
-        }
-        const resp = await updateTransaction(reqBody).unwrap();
-        console.log("transaction updated successfully", resp);
-        onClose();
+        await addTransaction(reqBody).unwrap();
       }
+      onClose();
     } catch (error) {
-      console.error("Failed to add transaction:", error);
-      // Optionally, show an error message to the user
+      console.error("Failed to save transaction:", error);
     }
   };
 
@@ -134,13 +135,11 @@ function AddTransactionDialog({ onClose, transaction }) {
             fullWidth={false}
             onClick={handleSubmit}
             disabled={
-              !formState?.isValid ||
-              isAddingTransaction ||
-              isUpdatingTransaction
+              !formState?.isValid || isAddingTransaction || isUpdatingTransaction
             }
             type="button"
           >
-            Save transaction
+            {transaction ? "Update transaction" : "Save transaction"}
           </FormButton>
         </div>
       }
@@ -168,6 +167,7 @@ function AddTransactionDialog({ onClose, transaction }) {
             }}
           />
         </div>
+
         <div className="md:col-span-2">
           <p className="mb-2 text-sm font-medium text-slate-700">Type</p>
           <Controller
@@ -180,8 +180,7 @@ function AddTransactionDialog({ onClose, transaction }) {
                   value={value}
                   onChange={(newType) => {
                     onChange(newType);
-                    // Reset category when type changes
-                    setValue("category", "", { shouldDirty: true });
+                    setValue("categoryId", "", { shouldDirty: true });
                   }}
                   options={[
                     { id: "income", label: "Income" },
@@ -292,7 +291,6 @@ function AddTransactionDialog({ onClose, transaction }) {
                 error={invalid && error?.message}
                 type="date"
                 label="Date"
-                defaultValue={new Date().toISOString().split("T")[0]}
               />
             );
           }}
@@ -300,7 +298,7 @@ function AddTransactionDialog({ onClose, transaction }) {
 
         <div className="md:col-span-2">
           <Controller
-            name="notes"
+            name="note"
             control={control}
             render={({ field }) => (
               <TextArea
