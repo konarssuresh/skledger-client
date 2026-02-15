@@ -13,6 +13,7 @@ import {
 
 import { showDialog } from "../../common-components/DialogContainer.jsx";
 import CalculatorDialog from "./CalculatorDialog.jsx";
+import AddCategoryInlineDialog from "./AddCategoryInlineDialog.jsx";
 import { useFetchCategoriesQuery } from "../../store/api/categorySlice";
 import {
   useAddTransactionMutation,
@@ -21,6 +22,8 @@ import {
 import { Selectors } from "../../store/calendarSlice";
 
 const { selectedDayKeySelector } = Selectors;
+const ADD_NEW_CATEGORY_VALUE = "__add_new_category__";
+const DIVIDER_VALUE = "__divider__";
 
 const getDefaultValues = ({ transaction = null, selectedDay } = {}) => {
   if (transaction) {
@@ -70,7 +73,8 @@ function AddTransactionDialog({ onClose, transaction }) {
   const type = useWatch({ control, name: "type" });
 
   const handleOpenCalculator = () => {
-    const closeDialog = showDialog(
+    let closeDialog = () => {};
+    closeDialog = showDialog(
       <CalculatorDialog
         onSelect={(selectedAmount) => {
           if (selectedAmount !== undefined) {
@@ -83,6 +87,30 @@ function AddTransactionDialog({ onClose, transaction }) {
         }}
         onClose={() => {
           closeDialog();
+        }}
+      />,
+    );
+  };
+
+  const handleOpenAddCategoryDialog = (selectedType) => {
+    let closeInlineDialog = () => {};
+    closeInlineDialog = showDialog(
+      <AddCategoryInlineDialog
+        defaultType={selectedType}
+        onClose={() => {
+          closeInlineDialog();
+        }}
+        onCreated={(category) => {
+          if (!category?._id) return;
+          setValue("categoryId", category._id, {
+            shouldDirty: true,
+            shouldValidate: true,
+          });
+          setValue("type", category.type || selectedType, {
+            shouldDirty: true,
+            shouldValidate: true,
+          });
+          closeInlineDialog();
         }}
       />,
     );
@@ -135,7 +163,9 @@ function AddTransactionDialog({ onClose, transaction }) {
             fullWidth={false}
             onClick={handleSubmit}
             disabled={
-              !formState?.isValid || isAddingTransaction || isUpdatingTransaction
+              !formState?.isValid ||
+              isAddingTransaction ||
+              isUpdatingTransaction
             }
             type="button"
           >
@@ -267,12 +297,29 @@ function AddTransactionDialog({ onClose, transaction }) {
             return (
               <FormSelect
                 {...field}
+                onChange={(event) => {
+                  const { value } = event.target;
+                  if (value === ADD_NEW_CATEGORY_VALUE) {
+                    handleOpenAddCategoryDialog(type);
+                    return;
+                  }
+                  field.onChange(event);
+                }}
                 loading={isFetchingCategories}
                 error={invalid && error?.message}
                 label="Category"
                 options={[
                   { label: "Select category", value: "", disabled: true },
                   ...options,
+                  {
+                    label: "────────────",
+                    value: DIVIDER_VALUE,
+                    disabled: true,
+                  },
+                  {
+                    label: "+ Add new category",
+                    value: ADD_NEW_CATEGORY_VALUE,
+                  },
                 ]}
               />
             );

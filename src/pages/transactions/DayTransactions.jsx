@@ -60,6 +60,18 @@ const TransactionActionSheet = ({
   const amountClass =
     amountClassByType[transaction?.type] || "text-base-content";
   const sign = signByType[transaction?.type] || "";
+  const transactionDate = formatDateLabel(
+    transaction?.date?.split?.("T")?.[0] || "",
+  );
+  const createdAt = transaction?.createdAt
+    ? new Date(transaction.createdAt).toLocaleString("en-IN", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      })
+    : "-";
 
   return createPortal(
     <div
@@ -75,16 +87,40 @@ const TransactionActionSheet = ({
         </div>
 
         <div className="mt-3 rounded-xl border border-base-300 bg-base-100 p-3">
-          <div className="text-base font-semibold text-base-content">
-            {transaction.name}
+          <div className="flex items-center justify-between gap-2">
+            <div className="text-base font-semibold text-base-content">
+              {transaction.name}
+            </div>
+            <div className="rounded-full border border-base-300 px-2 py-0.5 text-[11px] font-medium text-base-content/70">
+              {toTitleCase(transaction.type)}
+            </div>
           </div>
           <div className="text-sm text-base-content/65">
             {category?.emoji ? `${category.emoji} ` : ""}
-            {category?.name || "Unknown category"} ·{" "}
-            {toTitleCase(transaction.type)}
+            {category?.name || "Unknown category"}
           </div>
           <div className={`mt-2 text-lg font-bold ${amountClass}`}>
             {sign} {formatAmount(transaction.amount, transaction.currency)}
+          </div>
+          <div className="mt-3 grid gap-1.5 text-xs text-base-content/70">
+            <div>
+              <span className="font-medium text-base-content/80">Date:</span>{" "}
+              {transactionDate || displayDate}
+            </div>
+            <div>
+              <span className="font-medium text-base-content/80">Currency:</span>{" "}
+              {transaction.currency || "INR"}
+            </div>
+            <div>
+              <span className="font-medium text-base-content/80">Created:</span>{" "}
+              {createdAt}
+            </div>
+            {transaction.note ? (
+              <div>
+                <span className="font-medium text-base-content/80">Note:</span>{" "}
+                {transaction.note}
+              </div>
+            ) : null}
           </div>
         </div>
 
