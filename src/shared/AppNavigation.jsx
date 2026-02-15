@@ -10,7 +10,7 @@ const navItems = [
 const DesktopNav = ({ collapsed, onToggle }) => {
   return (
     <aside
-      className={`fixed left-0 top-0 z-40 hidden h-screen w-64 border-r border-base-300 bg-gradient-to-b from-base-100 to-base-200/70 px-5 py-6 backdrop-blur transition-all duration-300 ease-out md:block ${
+      className={`fixed left-0 top-0 z-40 hidden h-screen w-64 border-r border-base-300 bg-linear-to-b from-base-100 to-base-200/70 px-5 py-6 backdrop-blur transition-all duration-300 ease-out md:block ${
         collapsed
           ? "-translate-x-full opacity-0 pointer-events-none"
           : "translate-x-0 opacity-100"
@@ -94,9 +94,7 @@ const AppNavigation = ({
       <DesktopNav collapsed={desktopCollapsed} onToggle={onDesktopToggle} />
       <div
         className={`hidden transition-opacity duration-300 ease-out md:block ${
-          desktopCollapsed
-            ? "opacity-100"
-            : "opacity-0 pointer-events-none"
+          desktopCollapsed ? "opacity-100" : "opacity-0 pointer-events-none"
         }`}
       >
         <DesktopCollapsedTrigger onToggle={onDesktopToggle} />
