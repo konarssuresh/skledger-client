@@ -139,6 +139,57 @@ html.theme-dark .auth-page .theme-switch {
   background: rgba(15, 23, 42, 0.9);
 }
 
+.google-login-shell {
+  position: relative;
+  display: flex;
+  min-height: 3rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.85rem;
+}
+
+.google-login-visual {
+  display: flex;
+  min-height: 2.7rem;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(13, 148, 136, 0.85);
+  border-radius: 0.85rem;
+  background: transparent;
+  color: #0f766e;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.google-login-hitbox {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: 0.85rem;
+}
+
+.google-login-hitbox > div {
+  height: 100%;
+  width: 100%;
+  opacity: 0.01;
+}
+
+.google-login-hitbox iframe {
+  width: 100% !important;
+  min-width: 100% !important;
+  height: 100% !important;
+}
+
+html.theme-dark .google-login-shell {
+  background: transparent;
+}
+
+html.theme-dark .google-login-visual {
+  border-color: rgba(20, 184, 166, 0.95);
+  color: #0d9488;
+}
+
 .calc-panel {
   border-color: rgba(148, 163, 184, 0.45);
   background: rgba(255, 255, 255, 0.95);

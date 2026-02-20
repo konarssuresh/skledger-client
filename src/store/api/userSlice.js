@@ -21,6 +21,14 @@ export const userApi = createApi({
         body: data,
       }),
     }),
+    loginWithGoogle: builder.mutation({
+      query: (data) => ({
+        url: "api/auth/login/google",
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["user"],
+    }),
     me: builder.query({
       query: () => ({
         url: "api/auth/me",
@@ -52,6 +60,7 @@ export const userApi = createApi({
 export const {
   useLoginMutation,
   useSignupMutation,
+  useLoginWithGoogleMutation,
   useMeQuery,
   useChangePreferencesMutation,
   useSignoutMutation,

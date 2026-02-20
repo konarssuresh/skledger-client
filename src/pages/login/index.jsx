@@ -5,9 +5,11 @@ import { useEffect } from "react";
 import clsx from "clsx";
 import { useSelector, useDispatch } from "react-redux";
 import { Controller, useForm } from "react-hook-form";
+import { GoogleLogin } from "@react-oauth/google";
 import { FormButton, FormInput, LogoWordmark } from "../../common-components";
 import {
   useLoginMutation,
+  useLoginWithGoogleMutation,
   useMeQuery,
   userApi,
 } from "../../store/api/userSlice";
@@ -19,6 +21,8 @@ export default function LoginPage() {
   const theme = useSelector(themeSelector);
   const dispatch = useDispatch();
   const [login, { isLoading }] = useLoginMutation();
+  const [loginWithGoogle, { isLoading: isGoogleLoading }] =
+    useLoginWithGoogleMutation();
   const shouldSkipAuthCheck = Boolean(location.state?.skipAuthCheck);
   const { data: meData } = useMeQuery(undefined, {
     skip: shouldSkipAuthCheck,
@@ -60,6 +64,19 @@ export default function LoginPage() {
       navigate("/transactions", { replace: true });
     } catch (err) {
       console.error("Login failed:", err);
+    }
+  };
+
+  const handleGoogleSuccess = async (credentialResponse) => {
+    if (!credentialResponse?.credential) return;
+    try {
+      await loginWithGoogle({
+        credential: credentialResponse.credential,
+      }).unwrap();
+      dispatch(userApi.util.invalidateTags(["user"]));
+      navigate("/transactions", { replace: true });
+    } catch (error) {
+      console.error("Google login failed:", error);
     }
   };
 
@@ -156,16 +173,27 @@ export default function LoginPage() {
                 }}
               />
 
-              <FormButton
-                type="button"
-                variant="outline"
-                className="border-teal-300 text-teal-700 hover:bg-teal-50"
-              >
-                Continue with Google
-              </FormButton>
+              <div className="google-login-shell mt-1">
+                <div className="google-login-visual" aria-hidden>
+                  Continue with Google
+                </div>
+                <div className="google-login-hitbox">
+                  <GoogleLogin
+                    onSuccess={handleGoogleSuccess}
+                    onError={() => {
+                      console.error("Google sign in popup failed");
+                    }}
+                    useOneTap={false}
+                    text="continue_with"
+                    shape="pill"
+                    size="large"
+                    width={360}
+                  />
+                </div>
+              </div>
 
               <FormButton
-                disabled={!formState?.isValid || isLoading}
+                disabled={!formState?.isValid || isLoading || isGoogleLoading}
                 type="submit"
               >
                 Login
