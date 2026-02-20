@@ -128,7 +128,7 @@ const Calendar = ({ dayBalances = {}, daySummaryByDay = {} }) => {
           </div>
           <span className={`h-1.5 w-1.5 rounded-full md:h-2.5 md:w-2.5 ${markerClass}`} />
         </div>
-        <div className="mt-0.5 text-[10px] font-semibold leading-none text-base-content/60 md:hidden">
+        <div className="mt-0.5 text-[9px] font-semibold leading-none text-base-content/60 md:hidden">
           {formatCompactBalance(dayValue)}
         </div>
         <div className="hidden md:mt-8 md:block md:text-base md:font-semibold md:text-base-content/65">

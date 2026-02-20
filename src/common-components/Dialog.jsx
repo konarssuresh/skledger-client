@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import clsx from "clsx";
+import { AnimatePresence, motion as Motion } from "motion/react";
 
 const WIDTH_CLASS_MAP = {
   small: "max-w-sm",
@@ -28,10 +29,14 @@ export default function Dialog({
   width = "medium",
   showHeader = true,
   closeOnBackdropClick = true,
+  panelClassName = "",
+  bodyClassName = "",
 }) {
   const overlayRef = useRef(null);
   const panelRef = useRef(null);
   const lastFocusedRef = useRef(null);
+  const isClosingRef = useRef(false);
+  const [isVisible, setIsVisible] = useState(open);
 
   const widthClass = useMemo(
     () => WIDTH_CLASS_MAP[width] || WIDTH_CLASS_MAP.medium,
@@ -39,7 +44,7 @@ export default function Dialog({
   );
 
   useEffect(() => {
-    if (!open) return undefined;
+    if (!isVisible) return undefined;
 
     onOpen?.();
     lastFocusedRef.current = document.activeElement;
@@ -60,7 +65,7 @@ export default function Dialog({
     const timer = window.setTimeout(setInitialFocus, 0);
 
     const onKeyDown = (event) => {
-      if (!open || !panelRef.current) return;
+      if (!isVisible || !panelRef.current) return;
       const dialogPanels = document.querySelectorAll(".app-dialog");
       const topMostDialog = dialogPanels[dialogPanels.length - 1];
       const isTopMost = topMostDialog === panelRef.current;
@@ -68,7 +73,8 @@ export default function Dialog({
 
       if (event.key === "Escape") {
         event.preventDefault();
-        onClose?.();
+        isClosingRef.current = true;
+        setIsVisible(false);
         return;
       }
 
@@ -111,59 +117,97 @@ export default function Dialog({
         lastFocusedRef.current.focus();
       }
     };
-  }, [open, onClose, onOpen]);
+  }, [isVisible, onOpen]);
 
-  if (!open) return null;
+  useEffect(() => {
+    setIsVisible(open);
+  }, [open]);
+
+  if (!open && !isVisible) return null;
 
   return createPortal(
-    <div
-      ref={overlayRef}
-      className="fixed inset-0 z-1000 flex items-center justify-center bg-slate-900/45 p-4 backdrop-blur-[1px]"
-      onMouseDown={(event) => {
-        if (closeOnBackdropClick && event.target === overlayRef.current) {
+    <AnimatePresence
+      onExitComplete={() => {
+        if (isClosingRef.current) {
+          isClosingRef.current = false;
           onClose?.();
         }
       }}
     >
-      <section
-        ref={panelRef}
-        role="dialog"
-        aria-modal="true"
-        aria-label={title || "Dialog"}
-        tabIndex={-1}
-        className={clsx(
-          "app-dialog w-full rounded-2xl border border-slate-200/70 bg-base-100 shadow-2xl outline-none",
-          "max-h-[90vh] overflow-hidden",
-          widthClass,
-        )}
-      >
-        {showHeader ? (
-          <header className="app-dialog-header flex items-center justify-between border-b border-slate-200/70 px-5 py-4">
-            <h3 className="app-dialog-title text-lg font-semibold text-slate-900">
-              {title}
-            </h3>
-            <button
-              type="button"
-              className="btn btn-sm btn-ghost rounded-lg"
-              onClick={() => onClose?.()}
-              aria-label="Close dialog"
+      {isVisible ? (
+        <Motion.div
+          ref={overlayRef}
+          className="fixed inset-0 z-1000 flex items-center justify-center bg-slate-900/45 p-4 backdrop-blur-[1px]"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.18, ease: "easeOut" }}
+          onMouseDown={(event) => {
+            if (closeOnBackdropClick && event.target === overlayRef.current) {
+              isClosingRef.current = true;
+              setIsVisible(false);
+            }
+          }}
+        >
+          <Motion.section
+            ref={panelRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label={title || "Dialog"}
+            tabIndex={-1}
+            className={clsx(
+              "app-dialog w-full rounded-2xl border border-slate-200/70 bg-base-100 shadow-2xl outline-none",
+              "max-h-[90vh] overflow-hidden",
+              widthClass,
+              panelClassName,
+            )}
+            initial={{ y: 20, opacity: 0, scale: 0.98 }}
+            animate={{ y: 0, opacity: 1, scale: 1 }}
+            exit={{ y: 24, opacity: 0, scale: 0.98 }}
+            transition={{
+              type: "spring",
+              stiffness: 320,
+              damping: 28,
+              mass: 0.8,
+            }}
+          >
+            {showHeader ? (
+              <header className="app-dialog-header flex items-center justify-between border-b border-slate-200/70 px-5 py-4">
+                <h3 className="app-dialog-title text-lg font-semibold text-slate-900">
+                  {title}
+                </h3>
+                <button
+                  type="button"
+                  className="btn btn-sm btn-ghost rounded-lg"
+                  onClick={() => {
+                    isClosingRef.current = true;
+                    setIsVisible(false);
+                  }}
+                  aria-label="Close dialog"
+                >
+                  ✕
+                </button>
+              </header>
+            ) : null}
+
+            <div
+              className={clsx(
+                "app-dialog-body max-h-[60vh] overflow-y-auto px-5 py-4 text-slate-700",
+                bodyClassName,
+              )}
             >
-              ✕
-            </button>
-          </header>
-        ) : null}
+              {children}
+            </div>
 
-        <div className="app-dialog-body max-h-[60vh] overflow-y-auto px-5 py-4 text-slate-700">
-          {children}
-        </div>
-
-        {footer ? (
-          <footer className="app-dialog-footer border-t border-slate-200/70 px-5 py-4">
-            {footer}
-          </footer>
-        ) : null}
-      </section>
-    </div>,
+            {footer ? (
+              <footer className="app-dialog-footer border-t border-slate-200/70 px-5 py-4">
+                {footer}
+              </footer>
+            ) : null}
+          </Motion.section>
+        </Motion.div>
+      ) : null}
+    </AnimatePresence>,
     document.body,
   );
 }

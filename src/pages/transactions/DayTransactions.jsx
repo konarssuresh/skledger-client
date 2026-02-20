@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { useSelector } from "react-redux";
+import { AnimatePresence, motion as Motion } from "motion/react";
 import { FormButton } from "../../common-components";
 import { showDialog } from "../../common-components/DialogContainer.jsx";
 import AddTransactionDialog from "./AddTransactionDialog.jsx";
@@ -74,13 +75,28 @@ const TransactionActionSheet = ({
     : "-";
 
   return createPortal(
-    <div
+    <Motion.div
       className="fixed inset-0 z-1100 flex items-end bg-slate-900/40"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.2, ease: "easeOut" }}
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) onClose();
       }}
     >
-      <div className="w-full rounded-t-3xl border border-base-300 bg-base-100 px-4 pb-5 pt-4 shadow-2xl md:mx-auto md:mb-4 md:max-w-md md:rounded-2xl">
+      <Motion.div
+        className="w-full rounded-t-3xl border border-base-300 bg-base-100 px-4 pb-5 pt-4 shadow-2xl md:mx-auto md:mb-4 md:max-w-md md:rounded-2xl"
+        initial={{ y: "100%", opacity: 0.95 }}
+        animate={{ y: 0, opacity: 1 }}
+        exit={{ y: "100%", opacity: 0.95 }}
+        transition={{
+          type: "spring",
+          stiffness: 320,
+          damping: 32,
+          mass: 0.8,
+        }}
+      >
         <div className="mx-auto mb-3 h-1.5 w-12 rounded-full bg-base-300" />
         <div className="text-sm font-semibold text-base-content">
           {displayDate}
@@ -140,8 +156,8 @@ const TransactionActionSheet = ({
             Delete
           </FormButton>
         </div>
-      </div>
-    </div>,
+      </Motion.div>
+    </Motion.div>,
     document.body,
   );
 };
@@ -249,22 +265,24 @@ const DayTransactions = () => {
           : null}
       </div>
 
-      {selectedTransaction ? (
-        <TransactionActionSheet
-          transaction={selectedTransaction}
-          category={categoryMap[selectedTransaction.categoryId]}
-          displayDate={displayDate}
-          onClose={() => setSelectedTransaction(null)}
-          onEdit={() => {
-            openEditDialog(selectedTransaction);
-            setSelectedTransaction(null);
-          }}
-          onDelete={() => {
-            setSelectedTransaction(null);
-            openDeleteConfirm(selectedTransaction);
-          }}
-        />
-      ) : null}
+      <AnimatePresence>
+        {selectedTransaction ? (
+          <TransactionActionSheet
+            transaction={selectedTransaction}
+            category={categoryMap[selectedTransaction.categoryId]}
+            displayDate={displayDate}
+            onClose={() => setSelectedTransaction(null)}
+            onEdit={() => {
+              openEditDialog(selectedTransaction);
+              setSelectedTransaction(null);
+            }}
+            onDelete={() => {
+              setSelectedTransaction(null);
+              openDeleteConfirm(selectedTransaction);
+            }}
+          />
+        ) : null}
+      </AnimatePresence>
     </div>
   );
 };

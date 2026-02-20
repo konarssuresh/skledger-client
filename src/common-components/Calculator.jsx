@@ -24,7 +24,13 @@ function evaluateExpression(expression) {
   return result;
 }
 
-export default function Calculator({ onSubmit, className, submitLabel = "Submit" }) {
+export default function Calculator({
+  onSubmit,
+  onCancel,
+  className,
+  submitLabel = "Submit",
+  cancelLabel = "Cancel",
+}) {
   const [expression, setExpression] = useState("");
   const [error, setError] = useState("");
 
@@ -72,7 +78,9 @@ export default function Calculator({ onSubmit, className, submitLabel = "Submit"
   };
 
   return (
-    <section className={clsx("calc-panel rounded-2xl border p-4 shadow-sm", className)}>
+    <section
+      className={clsx("calc-panel flex h-full flex-col rounded-2xl border p-4 shadow-sm", className)}
+    >
       <div className="mb-3">
         <label className="mb-2 block text-sm font-medium text-slate-700">
           Operation
@@ -114,13 +122,22 @@ export default function Calculator({ onSubmit, className, submitLabel = "Submit"
         ))}
       </div>
 
-      <button
-        type="button"
-        onClick={runSubmit}
-        className="btn btn-secondary mt-3 w-full rounded-xl text-white"
-      >
-        {submitLabel}
-      </button>
+      <div className="mt-3 grid grid-cols-2 gap-2">
+        <button
+          type="button"
+          onClick={() => onCancel?.()}
+          className="btn btn-outline w-full rounded-xl"
+        >
+          {cancelLabel}
+        </button>
+        <button
+          type="button"
+          onClick={runSubmit}
+          className="btn btn-secondary w-full rounded-xl text-white"
+        >
+          {submitLabel}
+        </button>
+      </div>
     </section>
   );
 }
