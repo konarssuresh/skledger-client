@@ -73,9 +73,11 @@ function AddTransactionDialog({ onClose, transaction }) {
   const type = useWatch({ control, name: "type" });
 
   const handleOpenCalculator = () => {
+    const currentAmount = getValues("amount");
     let closeDialog = () => {};
     closeDialog = showDialog(
       <CalculatorDialog
+        value={currentAmount}
         onSelect={(selectedAmount) => {
           if (selectedAmount !== undefined) {
             setValue("amount", selectedAmount, {

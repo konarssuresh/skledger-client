@@ -29,6 +29,7 @@ export default function Dialog({
   width = "medium",
   showHeader = true,
   closeOnBackdropClick = true,
+  overlayClassName = "",
   panelClassName = "",
   bodyClassName = "",
 }) {
@@ -137,7 +138,10 @@ export default function Dialog({
       {isVisible ? (
         <Motion.div
           ref={overlayRef}
-          className="fixed inset-0 z-1000 flex items-center justify-center bg-slate-900/45 p-4 backdrop-blur-[1px]"
+          className={clsx(
+            "fixed inset-0 z-1000 flex items-center justify-center bg-slate-900/45 p-4 backdrop-blur-[1px]",
+            overlayClassName,
+          )}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}

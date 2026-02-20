@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import clsx from "clsx";
 
 const ALLOWED_EXPRESSION = /^[0-9+\-*/().\s]+$/;
@@ -25,14 +25,24 @@ function evaluateExpression(expression) {
 }
 
 export default function Calculator({
+  value,
   onSubmit,
   onCancel,
   className,
   submitLabel = "Submit",
   cancelLabel = "Cancel",
 }) {
-  const [expression, setExpression] = useState("");
+  const [expression, setExpression] = useState(() =>
+    value === undefined || value === null ? "" : sanitizeExpression(String(value)),
+  );
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    const initialValue =
+      value === undefined || value === null ? "" : sanitizeExpression(String(value));
+    setExpression(initialValue);
+    setError("");
+  }, [value]);
 
   const keys = useMemo(
     () => ["7", "8", "9", "/", "4", "5", "6", "*", "1", "2", "3", "-", "0", ".", "(", "+", ")", "C", "DEL", "="],

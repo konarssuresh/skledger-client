@@ -1,6 +1,6 @@
 import { Calculator, Dialog } from "../../common-components";
 
-function CalculatorDialog({ onSelect, onClose }) {
+function CalculatorDialog({ value, onSelect, onClose }) {
   return (
     <Dialog
       open
@@ -14,6 +14,7 @@ function CalculatorDialog({ onSelect, onClose }) {
       footer={null}
     >
       <Calculator
+        value={value}
         onSubmit={(value) => {
           onSelect(value);
           onClose();
