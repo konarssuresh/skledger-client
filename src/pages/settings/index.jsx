@@ -1,6 +1,8 @@
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router";
 import { FormButton } from "../../common-components";
+import { showDialog } from "../../common-components/DialogContainer.jsx";
+import ChangePasswordDialog from "../profile/ChangePasswordDialog.jsx";
 import {
   useChangePreferencesMutation,
   useMeQuery,
@@ -49,6 +51,17 @@ const SettingsPage = () => {
     }
   };
 
+  const handleOpenChangePassword = () => {
+    let closeDialog = () => {};
+    closeDialog = showDialog(
+      <ChangePasswordDialog
+        onClose={() => {
+          closeDialog();
+        }}
+      />,
+    );
+  };
+
   return (
     <main className="min-h-screen p-2 sm:p-3 md:p-10">
       <section className="mx-auto w-full max-w-5xl rounded-3xl border border-base-300 bg-base-100 p-4 shadow-sm sm:p-5 md:p-8">
@@ -67,26 +80,30 @@ const SettingsPage = () => {
           <div className="mt-3 grid gap-2">
             <button
               type="button"
-              disabled
+              onClick={() => navigate("/profile")}
               className="flex items-center justify-between rounded-xl border border-base-300 px-3 py-3 text-left"
             >
               <div>
                 <div className="text-sm font-semibold text-base-content">Profile</div>
-                <div className="text-xs text-base-content/60">Placeholder</div>
+                <div className="text-xs text-base-content/60">
+                  View and edit account details
+                </div>
               </div>
               <span className="text-base-content/50">›</span>
             </button>
 
             <button
               type="button"
-              disabled
+              onClick={handleOpenChangePassword}
               className="flex items-center justify-between rounded-xl border border-base-300 px-3 py-3 text-left"
             >
               <div>
                 <div className="text-sm font-semibold text-base-content">
                   Change Password
                 </div>
-                <div className="text-xs text-base-content/60">Placeholder</div>
+                <div className="text-xs text-base-content/60">
+                  Update your login password
+                </div>
               </div>
               <span className="text-base-content/50">›</span>
             </button>

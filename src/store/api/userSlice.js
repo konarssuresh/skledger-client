@@ -47,6 +47,21 @@ export const userApi = createApi({
       }),
       invalidatesTags: ["user"],
     }),
+    updateProfile: builder.mutation({
+      query: (data) => ({
+        url: "api/auth/profile",
+        method: "PATCH",
+        body: data,
+      }),
+      invalidatesTags: ["user"],
+    }),
+    changePassword: builder.mutation({
+      query: (data) => ({
+        url: "api/auth/change-password",
+        method: "POST",
+        body: data,
+      }),
+    }),
     signout: builder.mutation({
       query: () => ({
         url: "api/auth/signout",
@@ -63,5 +78,7 @@ export const {
   useLoginWithGoogleMutation,
   useMeQuery,
   useChangePreferencesMutation,
+  useUpdateProfileMutation,
+  useChangePasswordMutation,
   useSignoutMutation,
 } = userApi;

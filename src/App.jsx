@@ -7,6 +7,7 @@ import SignupPage from "./pages/signup";
 import DashboardPage from "./pages/dashboard";
 import TransactionsPage from "./pages/transactions";
 import SettingsPage from "./pages/settings";
+import ProfilePage from "./pages/profile";
 import { themeSelector } from "./store/userPreferenceSlice";
 import RouteProtector from "./RouteProtector";
 import AuthenticatedLayout from "./shared/AuthenticatedLayout";
@@ -27,6 +28,7 @@ function App() {
         <Route element={<AuthenticatedLayout />}>
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/transactions" element={<TransactionsPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
           <Route path="/settings" element={<SettingsPage />} />
         </Route>
       </Route>
