@@ -13,11 +13,11 @@ const BarChartCard = ({ data = [] }) => {
   const hasData = data.length > 0;
 
   return (
-    <section className="rounded-2xl border border-base-300 bg-base-100 p-3 md:p-4">
+    <section className="rounded-xl border border-base-300 bg-base-100 p-3 md:rounded-2xl md:p-4">
       <div className="mb-2 text-sm font-semibold text-base-content">
         Period Trend
       </div>
-      <div className="h-64 rounded-xl border border-base-300 bg-base-100 p-2 md:h-72">
+      <div className="h-64 rounded-xl bg-base-100 p-2 md:h-72 md:border md:border-base-300">
         {!hasData ? (
           <div className="grid h-full place-items-center text-sm text-base-content/60">
             No trend data

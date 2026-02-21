@@ -58,9 +58,18 @@ const InsightsSection = ({ insights = {}, recentTransactions = [] }) => {
             ))
           )}
         </div>
+        <div className="mt-3 flex justify-end">
+          <Link
+            to="/transactions"
+            className="text-sm font-semibold text-primary transition hover:opacity-85"
+          >
+            Show all transactions →
+          </Link>
+        </div>
       </div>
     </section>
   );
 };
 
 export default InsightsSection;
+import { Link } from "react-router";
