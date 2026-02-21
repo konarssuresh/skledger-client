@@ -1,13 +1,83 @@
-const Dashboard = () => {
+import { useDispatch, useSelector } from "react-redux";
+import DashboardHeader from "./DashboardHeader.jsx";
+import SummaryCards from "./SummaryCards.jsx";
+import ChartsSection from "./ChartsSection.jsx";
+import InsightsSection from "./InsightsSection.jsx";
+import DashboardShimmer from "./DashboardShimmer.jsx";
+import {
+  dashboardSelectors,
+  goToNextPeriod,
+  goToPreviousPeriod,
+  setPeriodType,
+} from "../../store/dashboardSlice";
+import { useFetchDashboardAnalyticsQuery } from "../../store/api/analyticsSlice";
+
+const DashboardPage = () => {
+  const dispatch = useDispatch();
+  const periodType = useSelector(dashboardSelectors.periodType);
+  const currentDate = useSelector(dashboardSelectors.currentDate);
+
+  const { data, isLoading, isFetching, isError } = useFetchDashboardAnalyticsQuery({
+    periodType,
+    date: currentDate,
+  });
+
+  const summary = data?.summary || {};
+  const categorySummary = data?.categorySummary || [];
+  const trendSummary = data?.trendSummary || [];
+  const insights = data?.insights || {};
+  const recentTransactions = data?.recentTransactions || [];
+
+  if (isLoading) {
+    return <DashboardShimmer />;
+  }
+
   return (
-    <div className="dashboard">
-      <h1>Dashboard</h1>
-      <p>
-        Welcome to the Skledger Dashboard! Here you can view your financial data
-        and manage your accounts.
-      </p>
-    </div>
+    <main className="min-h-screen p-2 sm:p-3 md:p-10">
+      <section className="mx-auto w-full max-w-6xl rounded-3xl border border-base-300 bg-base-100 p-3 shadow-sm sm:p-4 md:p-6">
+        <div className="mb-3">
+          <h1 className="text-2xl font-semibold text-base-content">Dashboard</h1>
+          <p className="mt-1 text-sm text-base-content/60">
+            Summary, charts and insights by selected period.
+          </p>
+        </div>
+
+        <DashboardHeader
+          periodType={periodType}
+          currentDate={currentDate}
+          onPeriodChange={(nextPeriod) => dispatch(setPeriodType(nextPeriod))}
+          onPrevious={() => dispatch(goToPreviousPeriod())}
+          onNext={() => dispatch(goToNextPeriod())}
+        />
+
+        {isError ? (
+          <section className="mt-3 rounded-2xl border border-error/35 bg-error/10 p-3 text-sm text-error">
+            Failed to load dashboard analytics.
+          </section>
+        ) : null}
+
+        <div className="mt-3">
+          <SummaryCards summary={summary} />
+        </div>
+        <div className="mt-3">
+          <ChartsSection
+            categorySummary={categorySummary}
+            trendSummary={trendSummary}
+          />
+        </div>
+        <div className="mt-3">
+          <InsightsSection
+            insights={insights}
+            recentTransactions={recentTransactions}
+          />
+        </div>
+
+        {isFetching && !isLoading ? (
+          <div className="mt-2 text-xs text-base-content/55">Updating dashboard...</div>
+        ) : null}
+      </section>
+    </main>
   );
 };
 
-export default Dashboard;
+export default DashboardPage;
