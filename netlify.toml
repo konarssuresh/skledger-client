@@ -2,3 +2,9 @@
   from = "/*"
   to = "/"
   status = 200
+
+[[redirects]]
+  from = "/api/*"
+  to = "https://skledger-server.onrender.com/:splat"
+  status = 200
+  force = true
